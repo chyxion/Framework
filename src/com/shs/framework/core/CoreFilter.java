@@ -1,6 +1,6 @@
 package com.shs.framework.core;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.regex.Pattern;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -20,7 +20,7 @@ import com.shs.framework.config.AbstractConfig;
 import com.shs.framework.config.Handlers;
 import com.shs.framework.config.Interceptors;
 import com.shs.framework.config.Plugins;
-import com.shs.framework.dao.ConnectionManager;
+import com.shs.framework.dao.DbManager;
 import com.shs.framework.handlers.AbstractHandler;
 import com.shs.framework.utils.JSONUtils;
 
@@ -112,7 +112,9 @@ public final class CoreFilter implements Filter {
 		}
 		try {
 			// Log4j配置
-			DOMConfigurator.configure(servletContext.getResource("/WEB-INF/config/log4j.xml"));
+			URL log4jConfig = servletContext.getResource("/WEB-INF/config/log4j.xml");
+			if (log4jConfig != null)
+				DOMConfigurator.configure(log4jConfig);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} 
@@ -145,15 +147,20 @@ public final class CoreFilter implements Filter {
 	}
 	public static JSONObject initConfig(ServletContext servletContext) {
 		try {
-			JSONObject joConfig = JSONUtils.newJSONObject(
-					new File(servletContext.getRealPath("/WEB-INF/config"), "app-config.json"),
-					"utf-8");
-			JSONObject joDataSource = joConfig.getJSONObject("dataSource");
-			ConnectionManager.DRIVER = joDataSource.getString("driver");
-			ConnectionManager.URL = joDataSource.getString("url");
-			ConnectionManager.USER_NAME = joDataSource.getString("userName");
-			ConnectionManager.PASSWORD = joDataSource.getString("password");
-			ConnectionManager.setDialect(joDataSource.getString("dialect"));
+			JSONObject joConfig;
+			URL appConfig = servletContext.getResource("/WEB-INF/config/config.json");
+			if (appConfig != null) {
+				joConfig = JSONUtils.newJSONObject(appConfig.openStream());
+				JSONObject joDataSource = joConfig.getJSONObject("database");
+				DbManager.DRIVER = joDataSource.getString("driver");
+				DbManager.URL = joDataSource.getString("url");
+				DbManager.USER_NAME = joDataSource.getString("userName");
+				DbManager.PASSWORD = joDataSource.getString("password");
+				DbManager.setDialect(joDataSource.getString("dialect"));
+				DbManager.LOWERCASE = joDataSource.optBoolean("lowercase");
+			} else {
+				joConfig = new JSONObject();
+			}
 			return joConfig;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

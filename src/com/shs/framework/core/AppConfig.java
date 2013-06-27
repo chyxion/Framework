@@ -1,7 +1,6 @@
 package com.shs.framework.core;
 import java.util.List;
 import org.apache.log4j.Logger;
-
 import com.shs.framework.config.AutoBindRoutes;
 import com.shs.framework.config.Constants;
 import com.shs.framework.config.Handlers;
@@ -9,7 +8,7 @@ import com.shs.framework.config.Interceptors;
 import com.shs.framework.config.AbstractConfig;
 import com.shs.framework.config.Plugins;
 import com.shs.framework.config.Routes;
-import com.shs.framework.dao.ConnectionManager;
+import com.shs.framework.dao.DbManager;
 import com.shs.framework.plugins.IPlugin;
 import com.shs.framework.plugins.druid.DruidPlugin;
 
@@ -39,11 +38,11 @@ public class AppConfig {
 		routes.add(ar);
 		// 数据库连接池
 		DruidPlugin dp = 
-				new DruidPlugin(ConnectionManager.URL, 
-				ConnectionManager.USER_NAME, 
-				ConnectionManager.PASSWORD, 
-				ConnectionManager.DRIVER);
-		ConnectionManager.setDataSourceProvider(dp);
+				new DruidPlugin(DbManager.URL, 
+				DbManager.USER_NAME, 
+				DbManager.PASSWORD, 
+				DbManager.DRIVER);
+		DbManager.setDataSourceProvider(dp);
 		plugins.add(dp);
 		config.configPlugin(plugins);					
 		// 启动插件
