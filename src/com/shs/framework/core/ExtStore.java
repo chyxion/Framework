@@ -3,6 +3,7 @@ import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import com.shs.framework.dao.BaseDAO;
+import com.shs.framework.dao.DbManager;
 import com.shs.framework.dao.BaseDAO.ConnectionOperator;
 
 import org.apache.commons.lang.StringUtils;
@@ -17,10 +18,9 @@ import org.json.JSONObject;
  * @support: chyxion@163.com
  * @date modified: 
  * @modified by: 
- * @copyright: Shenghang Soft All Right Reserved.
  */
 public abstract class ExtStore {
-	private BaseDAO dao = new BaseDAO();
+	private BaseDAO dao;
 	/**
 	 * 当前拥有的数据
 	 */
@@ -32,7 +32,7 @@ public abstract class ExtStore {
 	/**
 	 * 总数据，不是data.length()，grid分页时候用
 	 */
-	private int total;
+	private Object total;
 	/**
 	 * 查询SQL
 	 */
@@ -64,7 +64,7 @@ public abstract class ExtStore {
     /**
      * 查询的JSON属性小写
      */
-    private boolean lowerCase;
+    private boolean lowerCase = DbManager.LOWERCASE;
     /**
      * 数据库连接
      */
@@ -84,7 +84,7 @@ public abstract class ExtStore {
 	 * store总数，分页使用
 	 * @return 总数
 	 */
-	public int getTotal() {
+	public Object getTotal() {
 		return total;
 	}
 	/**
@@ -92,9 +92,10 @@ public abstract class ExtStore {
 	 * @param params
 	 * @throws Exception
 	 */
-    protected ExtStore(final Params params) {
+    protected ExtStore(BaseDAO dao, final Params params) {
+    	this.dao = dao;
         this.params = params;
-        dao.execute(new ConnectionOperator() {
+        this.dao.execute(new ConnectionOperator() {
             @Override
             public void run() throws Exception {
                 ExtStore.this.dbConnection = dbConnection;
@@ -104,7 +105,7 @@ public abstract class ExtStore {
                 }
                 data = findJSONArrayPage(
                 		ExtStore.this.lowerCase,
-                		orderCol, 
+                		getOrderCol(), 
                 		direction, 
                 		params.getInt("start", 0), 
                 		params.getInt("limit", 0), 
@@ -114,7 +115,13 @@ public abstract class ExtStore {
             }
         });
     }
-    public ExtStore setSQL(String strSQL) {
+    protected String getOrderCol() {
+    	if (orderCol == null) {
+    		throw new RuntimeException("ExtStore未指定order by列，请调用orderBy方法！");
+    	}
+		return orderCol;
+	}
+	public ExtStore setSQL(String strSQL) {
     	return setSQL(new StringBuffer(strSQL));
     }
     public ExtStore setSQL(StringBuffer sbSQL) {
@@ -153,10 +160,10 @@ public abstract class ExtStore {
      * 总数，分页时候改写用，
      * @throws Exception
      */
-    private int total() throws Exception {
+    private Object total() throws Exception {
     	String strSQL = sbSQL.toString();
     	strSQL = "select count(1) " + strSQL.substring(StringUtils.indexOfIgnoreCase(strSQL, " from "));
-    	return dao.findInt(dbConnection, strSQL, values.toArray());
+    	return dao.findObj(dbConnection, strSQL, values.toArray());
     };
     /**
      * 生成查询SQL
@@ -225,15 +232,11 @@ public abstract class ExtStore {
     @Override
     public String toString() {
 		try {
-			JSONObject joResult = 
-				new JSONObject()
-				.put("success", true)
-				.put("data", data);
 			// 如果提供总数，输出总数
-			if (total > 0) {
-				joResult.put("total", total);
-			}
-			return joResult.toString();
+			return new JSONObject()
+						.put("success", true)
+						.put("data", data)
+						.put("total", total).toString();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
