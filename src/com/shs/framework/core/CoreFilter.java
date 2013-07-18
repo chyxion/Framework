@@ -64,11 +64,12 @@ public final class CoreFilter implements Filter {
 		
 		if (isHandled[0] == false) {
 			// gzip压缩
-			String acceptEncoding = request.getHeader("Accept-Encoding").toLowerCase();
+			String acceptEncoding = request.getHeader("Accept-Encoding");
 			if (acceptEncoding != null && 
-					acceptEncoding.contains("gzip") && 
+					acceptEncoding.toLowerCase().contains("gzip") && 
 					Pattern.compile("\\.(?i)(js|css|html|jsp|jspx)$")
 					.matcher(target).find()) {
+				logger.debug("gzip compress request[" + target + "]");
 				GzipResponseWrapper wrappedResponse = new GzipResponseWrapper(response);
 				chain.doFilter(req, wrappedResponse);
 				wrappedResponse.finish();

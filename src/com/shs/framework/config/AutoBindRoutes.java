@@ -20,16 +20,14 @@ import com.shs.framework.utils.ClassSearcher;
  */
 
 public class AutoBindRoutes extends Routes {
-
-    protected final Logger logger = Logger.getLogger(getClass());
-
+    protected final Logger logger = Logger.getLogger(AutoBindRoutes.class);
+    // 不包括的类
     private List<Class<? extends BaseController>> excludeClasses = new LinkedList<Class<? extends BaseController>>();
-
+    // 路由Jav包
     private List<String> routeJARs = new LinkedList<String>();
-
-    private boolean autoScan = true;
+    // 扫描所有JAR包
     private boolean scanAllJARs = false;
-    
+    // 控制器后缀
     private String suffix = "Controller";
 
     public AutoBindRoutes addJAR(String jarName) {
@@ -76,41 +74,50 @@ public class AutoBindRoutes extends Routes {
     @SuppressWarnings({"unchecked"})
     @Override
     public void config() {
+    	// 扫描所有的控制器
         List<Class<? extends BaseController>> controllers = 
         	ClassSearcher.findInClasspathAndJars(BaseController.class, routeJARs);
         // 扫描全部JAR包
-        if (scanAllJARs) controllers.addAll(ClassSearcher.findAllJARs(BaseController.class));
-        RouteMapping routePath = null;
+        if (scanAllJARs) 
+        	controllers.addAll(ClassSearcher.findAllJARs(BaseController.class));
+        // 路由映射
+        RouteMapping routeMapping = null;
+        // 遍历全部控制器
         for (Class controller : controllers) {
+        	// 不包含，跳过
             if (excludeClasses.contains(controller)) {
                 continue;
             }
-            routePath = (RouteMapping) controller.getAnnotation(RouteMapping.class);
-            if (routePath == null) {
-                if (!autoScan) {
-                    continue;
-                }
-                this.add(controllerKey(controller), controller);
-                logger.debug("user default class route!");
-                logger.debug("routes.add(" + controllerKey(controller) + ", " + controller.getName() + ")");
+            // 控制器路由
+            routeMapping = (RouteMapping) controller.getAnnotation(RouteMapping.class);
+            String route;
+            // 没有配置路由，使用默认
+            if (routeMapping == null) {
+            	route = controllerKey(controller);
+                this.add(route, controller);
+                logger.debug("使用默认路由: routes.add(" + route + ", " + controller.getName() + ")");
             } else {
-            	String controllerPath = routePath.controller();
-            	if (!StringUtils.isEmpty(controllerPath)) {
-	                this.add(controllerPath, controller, routePath.view());
-	                logger.debug("routes.add(" + controllerPath + ", " + controller + ","
-	                        + routePath.view() + ")");
+            	route = routeMapping.controller();
+            	if (!StringUtils.isEmpty(route)) {
+	                this.add(route, controller, routeMapping.view());
+	                logger.debug("使用配置路由: routes.add(" + route + ", " + controller.getName() + "," + routeMapping.view() + ")");
+            	} else {
+	                logger.error("控制器[" + controller + "]的路由配置为空！");
             	}
             }
         }
     }
-
+    /**
+     * 获取控制器Key，如果以Controller结尾，截取前半部分名字
+     * @param clazz
+     * @return
+     */
     private String controllerKey(Class<BaseController> clazz) {
-    	if (!clazz.getSimpleName().endsWith(suffix)) {
-    		throw new RuntimeException(clazz.getSimpleName() + " does not has a RoutePathBind annotation and it's name is not end with " + suffix);
-    	}
-        		
-        String controllerKey = "/" + StringUtils.uncapitalize(clazz.getSimpleName());
-        controllerKey = controllerKey.substring(0, controllerKey.indexOf("Controller"));
+    	String controllerKey = "/" + StringUtils.uncapitalize(clazz.getSimpleName());
+    	// Controller结尾
+    	if (controllerKey.endsWith(suffix)) {
+	        controllerKey = controllerKey.substring(0, controllerKey.indexOf(suffix));
+    	} 
         return controllerKey;
     }
 
@@ -127,10 +134,6 @@ public class AutoBindRoutes extends Routes {
     }
     public void setRouteJARs(List<String> includeJars) {
         this.routeJARs = includeJars;
-    }
-
-    public void setAutoScan(boolean autoScan) {
-        this.autoScan = autoScan;
     }
 
     public String getSuffix() {

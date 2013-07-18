@@ -110,6 +110,7 @@ final class ActionHandler extends AbstractHandler {
 			e.printStackTrace();
 			String qs = request.getQueryString();
 			logger.error(qs == null ? target : target + "?" + qs, e);
+			logger.error(e);
 		}
 	}
 }

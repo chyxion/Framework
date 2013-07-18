@@ -1,5 +1,4 @@
 package com.shs.framework.exceptions;
-
 /**
  * @version 0.1
  * @author chyxion
@@ -8,7 +7,6 @@ package com.shs.framework.exceptions;
  * @support: chyxion@163.com
  * @date modified: 
  * @modified by: 
- * @copyright: Shenghang Soft All Right Reserved.
  */
 public class ValidateException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

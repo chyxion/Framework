@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
  * @support: chyxion@163.com
  * @date modified: 
  * @modified by: 
- * @copyright: Shenghang Soft All Right Reserved.
  */
 public abstract class Renderer implements Serializable {
 	

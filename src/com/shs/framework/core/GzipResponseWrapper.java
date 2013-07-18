@@ -7,6 +7,8 @@ import java.util.zip.GZIPOutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.apache.log4j.Logger;
 /**
  * @version 0.1
  * @author chyxion
@@ -15,9 +17,9 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * @support: chyxion@163.com
  * @date modified: 
  * @modified by: 
- * @copyright: Shenghang Soft All Right Reserved.
  */
 public class GzipResponseWrapper extends HttpServletResponseWrapper {
+	private Logger logger = Logger.getLogger(GzipResponseWrapper.class);
 	protected HttpServletResponse response = null;
 	protected ServletOutputStream outputStream = null;
 	protected PrintWriter writer = null;
@@ -33,6 +35,7 @@ public class GzipResponseWrapper extends HttpServletResponseWrapper {
 	 * 响应完毕
 	 */
 	public void finish() {
+		logger.debug("wrapper finished");
 		try {
 			if (writer != null) {
 				writer.close();

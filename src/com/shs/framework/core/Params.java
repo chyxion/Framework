@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.ServletContext;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +132,21 @@ public class Params {
 	 */
 	public String get(String name) {
 		return mapParams.get(name);
+	}
+	public String getDecode(String name) {
+		String v = get(name);
+		return StringUtils.isEmpty(v) ? null : decodeParam(v);
+	}
+	public String getDecode(int index) {
+		String v = get(index);
+		return StringUtils.isEmpty(v) ? null : decodeParam(v);
+	}
+	private String decodeParam(String v) {
+		try {
+			return URLDecoder.decode(new String(v.getBytes("iso-8859-1"), "utf-8"), "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	public String get() {
 		return urlParam;
