@@ -1,7 +1,10 @@
 Framework
 =========
 
-Java Web 框架，JFinal衍生版本，修改程度较大，大量采用JSON格式数据交换，方便与ExtJS整合，样例[demo grid](https://github.com/chyxion/DemoGrid)
+Java Web 框架，JFinal衍生版本，修改程度较大，大量采用JSON格式数据交换，方便与ExtJS整合。
+样例：
+* [Demo Grid](https://github.com/chyxion/DemoGrid)，基本的Grid展示，分页，查询
+* [Demo CRUD](https://github.com/chyxion/DemoCRUD)，增删改查样例
 
 ## 配置web.xml
     
