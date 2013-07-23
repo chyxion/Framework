@@ -32,7 +32,8 @@ final class ActionReporter {
 	}
 	
 	private static final void doReport(BaseController controller, Action action) {
-		StringBuilder sb = new StringBuilder("\nAction Report -------- ").append(sdf.format(new Date())).append(" ------------------------------\n");
+		StringBuffer sb = new StringBuffer("\nAction Report -------- ")
+			.append(sdf.format(new Date())).append(" ------------------------------\n");
 		Class<? extends BaseController> cc = action.getControllerClass();
 		sb.append("Controller  : ").append(cc.getName()).append(".(").append(cc.getSimpleName()).append(".java:1)");
 		sb.append("\nMethod      : ").append(action.getMethodName()).append("\n");

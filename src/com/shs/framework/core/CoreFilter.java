@@ -1,6 +1,7 @@
 package com.shs.framework.core;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.regex.Pattern;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.json.JSONObject;
-import com.alibaba.druid.util.StringUtils;
 import com.shs.framework.config.Constants;
 import com.shs.framework.config.AbstractConfig;
 import com.shs.framework.config.Handlers;
@@ -22,6 +22,7 @@ import com.shs.framework.config.Interceptors;
 import com.shs.framework.config.Plugins;
 import com.shs.framework.dao.DbManager;
 import com.shs.framework.handlers.AbstractHandler;
+import com.shs.framework.utils.ClassSearcher;
 import com.shs.framework.utils.JSONUtils;
 
 public final class CoreFilter implements Filter {
@@ -56,13 +57,12 @@ public final class CoreFilter implements Filter {
 		try {
 			handler.handle(target, request, response, isHandled);
 		} catch (Exception e) {
-			String msg = request.getQueryString();
-			msg = msg == null ? target : target + "?" + msg;
-			logger.error(msg, e);
+			String p = request.getQueryString();
+			logger.error(p == null ? target : target + "?" + p, e);
 			e.printStackTrace();
 		}
 		
-		if (isHandled[0] == false) {
+		if (!isHandled[0]) {
 			// gzip压缩
 			String acceptEncoding = request.getHeader("Accept-Encoding");
 			if (acceptEncoding != null && 
@@ -88,29 +88,6 @@ public final class CoreFilter implements Filter {
 	
 	public void init(FilterConfig filterConfig) throws ServletException {
 		ServletContext servletContext = filterConfig.getServletContext();
-		// 最先配置系统配置
-		JSONObject joConfig = initConfig(servletContext);
-		// 配置类
-		String configClass = filterConfig.getInitParameter("configClass");
-		// 没有配置类，
-		if (StringUtils.isEmpty(configClass)) {
-			baseConfig = new AbstractConfig() {
-				@Override
-				public void configPlugin(Plugins plugins) {
-				}
-				@Override
-				public void configInterceptor(Interceptors interceptors) {
-				}
-				@Override
-				public void configHandler(Handlers handlers) {
-				}
-				@Override
-				public void configConstant(Constants constants) {
-				}
-			};
-		} else {
-			initConfig(configClass);
-		}
 		try {
 			// Log4j配置
 			URL log4jConfig = servletContext.getResource("/WEB-INF/config/log4j.xml");
@@ -119,34 +96,21 @@ public final class CoreFilter implements Filter {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} 
-		// 启动框架失败
-		if (framework.init(baseConfig, servletContext) == false)
-			throw new RuntimeException("Framework init error!");
+		// 初始化系统配置
+		JSONObject joConfig = initConfig(servletContext);
+		// 启动框架
+		framework.init(baseConfig, servletContext);
 		handler = framework.getHandler();
 		constants = AppConfig.getConstants();
 		constants.setJOConfig(joConfig);
 		encoding = constants.getEncoding();
+		// 启动后回调
 		baseConfig.afterStart();
 		String contextPath = servletContext.getContextPath();
 		contextPathLength = (contextPath == null || "/".equals(contextPath) ? 0 : contextPath.length());
 	}
 	
-	private void initConfig(String configClass) {
-		try {
-			Object configObj = Class.forName(configClass).newInstance();
-			if (configObj instanceof AbstractConfig)
-				baseConfig = (AbstractConfig) configObj;
-			else
-				throw new RuntimeException("Can not create instance of class: " + configClass + ". Please check the config in web.xml");
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Can not create instance of class: " + configClass, e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Can not create instance of class: " + configClass, e);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Class not found: " + configClass + ". Please config it in web.xml", e);
-		}
-	}
-	public static JSONObject initConfig(ServletContext servletContext) {
+	private JSONObject initConfig(ServletContext servletContext) {
 		try {
 			JSONObject joConfig;
 			URL appConfig = servletContext.getResource("/WEB-INF/config/config.json");
@@ -161,6 +125,26 @@ public final class CoreFilter implements Filter {
 				DbManager.LOWERCASE = joDataSource.optBoolean("lowercase");
 			} else {
 				joConfig = new JSONObject();
+			}
+			// 初始化配置类
+			List<Class<? extends AbstractConfig>> cc = ClassSearcher.findInClassPath(AbstractConfig.class);
+			if (cc.size() > 0) {
+				baseConfig = cc.get(0).newInstance();
+			} else { // 没有配置类
+				baseConfig = new AbstractConfig() {
+					@Override
+					public void configPlugin(Plugins plugins) {
+					}
+					@Override
+					public void configInterceptor(Interceptors interceptors) {
+					}
+					@Override
+					public void configHandler(Handlers handlers) {
+					}
+					@Override
+					public void configConstant(Constants constants) {
+					}
+				};
 			}
 			return joConfig;
 		} catch (Exception e) {

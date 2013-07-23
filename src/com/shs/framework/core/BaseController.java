@@ -341,7 +341,7 @@ public abstract class BaseController {
 	 * Forward to an action
 	 */
 	public void forwardAction(String actionUrl) {
-		render = new ActionRender(actionUrl);
+		render = new ActionRenderer(actionUrl);
 	}
 	
 	/**

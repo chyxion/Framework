@@ -5,11 +5,11 @@ import com.shs.framework.renderers.Renderer;
 /**
  * ActionRender
  */
-final class ActionRender extends Renderer {
+final class ActionRenderer extends Renderer {
 	private static final long serialVersionUID = 1L;
 	private String actionURL;
 	
-	public ActionRender(String actionUrl) {
+	public ActionRenderer(String actionUrl) {
 		this.actionURL = actionUrl.trim();
 	}
 	

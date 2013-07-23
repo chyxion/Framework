@@ -75,8 +75,8 @@ final class ActionHandler extends AbstractHandler {
 			
 			new ActionInvocation(action, controller).invoke();
 			Renderer render = controller.getRender();
-			if (render instanceof ActionRender) {
-				String actionURL = ((ActionRender)render).getActionURL();
+			if (render instanceof ActionRenderer) {
+				String actionURL = ((ActionRenderer)render).getActionURL();
 				if (target.equals(actionURL))
 					throw new RuntimeException("The forward action url is the same as before.");
 				else

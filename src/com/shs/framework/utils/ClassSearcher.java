@@ -10,15 +10,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.joor.Reflect;
 
 public class ClassSearcher {
 	
     protected static final Logger logger = Logger.getLogger(ClassSearcher.class);
-    static URL classPath = ClassSearcher.class.getResource("/");
-    static String lib = new File(classPath.getFile()).getParent() + "/lib/";
-
+    private static URL classPath = ClassSearcher.class.getResource("/");
+    private static String lib = new File(classPath.getFile()).getParent() + "/lib/";
     /**
      * 递归查找文件
      * 
@@ -29,7 +30,9 @@ public class ClassSearcher {
      */
     private static List<String> findFiles(File baseDir, String targetFileName) {
         /**
-         * 算法简述： 从某个给定的需查找的文件夹出发，搜索该文件夹的所有子文件夹及文件， 若为文件，则进行匹配，匹配成功则加入结果集，若为子文件夹，则进队列。 队列不空，重复上述操作，队列为空，程序结束，返回结果。
+         * 算法简述： 从某个给定的需查找的文件夹出发，
+         * 搜索该文件夹的所有子文件夹及文件， 若为文件，则进行匹配，匹配成功则加入结果集，
+         * 若为子文件夹，则进队列。 队列不空，重复上述操作，队列为空，程序结束，返回结果。
          */
         List<String> classFiles = new LinkedList<String>();
         // 判断目录是否存在
@@ -43,8 +46,7 @@ public class ClassSearcher {
                 } else {
                     if (ClassSearcher.wildcardMatch(targetFileName, file.getName())) {
                         String fileFullName = file.getAbsoluteFile().toString().replaceAll("\\\\", "/");
-                        String className;
-                        className = fileFullName.substring(fileFullName.indexOf("/classes") + "/classes".length(), fileFullName.indexOf(".class"));
+                        String className = fileFullName.substring(fileFullName.indexOf("/classes") + "/classes".length(), fileFullName.indexOf(".class"));
                         if (className.startsWith("/")) {
                             className = className.substring(className.indexOf("/") + 1);
                         }
@@ -113,7 +115,7 @@ public class ClassSearcher {
                 if (file.isDirectory()) {
                     classFiles.addAll(findAllJARs(file));
                 } else {
-                	if (fileName.endsWith(".jar")) {
+                	if (StringUtils.endsWithIgnoreCase(fileName, ".jar")) {
 	                    JarFile localJarFile = new JarFile(file);
 	                    Enumeration<JarEntry> entries = localJarFile.entries();
 	                    while (entries.hasMoreElements()) {
@@ -167,7 +169,7 @@ public class ClassSearcher {
      * @param pattern
      *            通配符模式
      * @param str
-     *            待匹配的字符串 <a href="http://my.oschina.net/u/556800" target="_blank" rel="nofollow">@return</a>
+     *            待匹配的字符串 
      *            匹配成功则返回true，否则返回false
      */
     private static boolean wildcardMatch(String pattern, String str) {
@@ -201,10 +203,13 @@ public class ClassSearcher {
         }
         return strIndex == strLength;
     }
-
+    /**
+     * 查找类路径下所有指定类
+     * @param <T>
+     * @param clazz
+     * @return
+     */
     public static <T> List<Class<? extends T>> findInClassPath(Class<T> clazz) {
-        List<String> classFileList = findFiles(
-        		new File(classPath.getFile()), "*.class");
-        return extraction(clazz, classFileList);
+        return extraction(clazz, findFiles(new File(classPath.getFile()), "*.class"));
     }
 }
