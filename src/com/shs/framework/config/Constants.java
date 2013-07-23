@@ -29,18 +29,39 @@ final public class Constants {
 	private int freeMarkerTemplateUpdateDelay = Constant.DEFAULT_FREEMARKER_TEMPLATE_UPDATE_DELAY;	// just for not devMode
 	// Ajax请求标识名
 	private String ajaxParam = "__ajax";
+	/**
+	 * WEB-INF/config/config.json的自动加载
+	 */
 	private JSONObject joConfig;
+	/**
+	 * 路由jar，如果控制器在jar包中，添加jar包名到该list中，方能自动绑定
+	 */
 	private List<String> routeJARs = new LinkedList<String>();
+	/**
+	 * 数据库访问层BaseDAO的事件类
+	 */
 	private Class<? extends IEventHandler> daoEventClass;
+	/**
+	 * 数据库访问层BaseDAO的事件类
+	 */
 	public Class<? extends IEventHandler> getDAOEventClass() {
 		return daoEventClass;
 	}
+	/**
+	 * 数据库访问层BaseDAO的事件类
+	 */
 	public void setDAOEventClass(Class<? extends IEventHandler> daoEventClass) {
 		this.daoEventClass = daoEventClass;
 	}
+	/**
+	 * WEB-INF/config/config.json的自动加载JSONObject对象
+	 */
 	public JSONObject getJOConfig() {
 		return joConfig;
 	}
+	/**
+	 * 路由jar，如果控制器在jar包中，调用此方法添加jar包，方能自动绑定
+	 */
 	public Constants addRouteJAR(String jar) {
 		routeJARs.add(jar);
 		return this;
@@ -55,6 +76,10 @@ final public class Constants {
 	public String getAjaxParam() {
 		return ajaxParam;
 	}
+	/**
+	 * 设置Ajax请求标志，响应数据自动为JSON格式
+	 * @param ajaxParam
+	 */
 	public void setAjaxParam(String ajaxParam) {
 		this.ajaxParam = ajaxParam;
 	}
@@ -63,8 +88,10 @@ final public class Constants {
 	 */
 	private List<String> excludeRequestPatterns = new LinkedList<String>();
 	/**
-	 * Set ITokenCache implementation otherwise JFinal will use the HttpSesion to hold the token.
-	 * @param tokenCache the token cache
+	 * 添加不包含的请求模式，比如，
+	 *	constants.addExcludeReqestPattern("doNotHandleThis/.*");
+	 *  这样所有以doNotHandleThis开头的请求都不受到框架过滤
+	 * @param p
 	 */
 	public void addExcludeReqestPattern(String p) {
 		excludeRequestPatterns.add(p);
