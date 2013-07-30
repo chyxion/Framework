@@ -24,6 +24,10 @@ public class MultipartRequest extends HttpServletRequestWrapper {
 	private List<UploadFile> uploadFiles;
 	private com.oreilly.servlet.MultipartRequest multipartRequest;
 	
+	public com.oreilly.servlet.MultipartRequest getMultipartRequest() {
+		return multipartRequest;
+	}
+
 	static void init(String saveDirectory, int maxPostSize, String encoding) {
 		MultipartRequest.saveDirectory = saveDirectory;
 		MultipartRequest.maxPostSize = maxPostSize;

@@ -41,7 +41,7 @@ public class UploadFile {
 		if (saveDirectory == null || fileName == null) {
 			return null;
 		} else {
-			return new File(saveDirectory + File.separator + fileName);
+			return new File(saveDirectory, fileName);
 		}
 	}
 }

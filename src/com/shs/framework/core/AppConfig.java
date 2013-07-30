@@ -42,6 +42,7 @@ public class AppConfig {
 				DbManager.USER_NAME, 
 				DbManager.PASSWORD, 
 				DbManager.DRIVER);
+		dp.setValidationQuery(DbManager.VALIDATE_SQL);
 		DbManager.setDataSourceProvider(dp);
 		plugins.add(dp);
 		config.configPlugin(plugins);					

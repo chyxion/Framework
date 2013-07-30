@@ -66,8 +66,8 @@ public class Params {
 	 */
 	public List<UploadFile> getFiles(String saveDirectory, Integer maxPostSize, String encoding) {
 		if (multipartRequest == null) {
-			multipartRequest = new MultipartRequest(request, saveDirectory, maxPostSize, encoding);
-			request = multipartRequest;
+			request =multipartRequest = new MultipartRequest(request, saveDirectory, maxPostSize, encoding);
+			addMultipartParams(multipartRequest);
 		}
 		return multipartRequest.getFiles();
 	}
@@ -79,8 +79,8 @@ public class Params {
 	
 	public List<UploadFile> getFiles(String saveDirectory, int maxPostSize) {
 		if (multipartRequest == null) {
-			multipartRequest = new MultipartRequest(request, saveDirectory, maxPostSize);
-			request = multipartRequest;
+			request = multipartRequest = new MultipartRequest(request, saveDirectory, maxPostSize);
+			addMultipartParams(multipartRequest);
 		}
 		return multipartRequest.getFiles();
 	}
@@ -92,8 +92,8 @@ public class Params {
 	
 	public List<UploadFile> getFiles(String saveDirectory) {
 		if (multipartRequest == null) {
-			multipartRequest = new MultipartRequest(request, saveDirectory);
-			request = multipartRequest;
+			request = multipartRequest = new MultipartRequest(request, saveDirectory);
+			addMultipartParams(multipartRequest);
 		}
 		return multipartRequest.getFiles();
 	}
@@ -105,12 +105,26 @@ public class Params {
 	
 	public List<UploadFile> getFiles() {
 		if (multipartRequest == null) {
-			multipartRequest = new MultipartRequest(request);
-			request = multipartRequest;
+			request = multipartRequest = new MultipartRequest(request);
+			addMultipartParams(multipartRequest);
 		}
 		return multipartRequest.getFiles();
 	}
-	
+	/**
+	 * 添加Payload参数
+	 * @param mr
+	 * @return
+	 */
+	private Params addMultipartParams(MultipartRequest mr) {
+		com.oreilly.servlet.MultipartRequest r = multipartRequest.getMultipartRequest();
+		Enumeration<String> names = r.getParameterNames();
+		String name;
+		while (names.hasMoreElements()) {
+			name = names.nextElement();
+			mapParams.put(name, r.getParameter(name));
+		}
+		return this;
+	}
 	public UploadFile getFile() {
 		List<UploadFile> uploadFiles = getFiles();
 		return uploadFiles.size() > 0 ? uploadFiles.get(0) : null;
